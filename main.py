@@ -1,3 +1,4 @@
+import argparse
 import feedparser
 import smtplib
 from email.message import EmailMessage
@@ -22,6 +23,16 @@ def validate_email_config():
 
     if not EMAIL_PASSWORD:
         raise ValueError("EMAIL_PASSWORD is missing from .env")
+    
+def parse_args():
+    parser = argparse.ArgumentParser(description = "Send a daily news digest email.")
+    parser.add_argument(
+        "--preview",
+        action="store_true",
+        help="Preview the digest without sending an email.",
+    )
+
+    return parser.parse_args()
 
 def fetch_stories():
     stories = []
@@ -83,6 +94,8 @@ def remove_duplicate_stories(stories):
 def main():
     validate_email_config()
 
+    args = parse_args()
+
     stories = fetch_stories()
     unique_stories = remove_duplicate_stories(stories)
     selected_stories = select_top_stories(unique_stories, STORY_LIMIT)
@@ -92,8 +105,11 @@ def main():
     print(f"After removing duplicates: {len(unique_stories)} stories.")
     print(f"Selected {len(selected_stories)} stories.")
 
-    send_email(EMAIL_SUBJECT, digest)
-    print("Email sent.")
+    if args.preview:
+        print("Preview mode: email was not sent.")
+    else:
+        send_email(EMAIL_SUBJECT, digest)
+        print("Email sent.")
 
 # Script entry point
 if __name__ == "__main__":
