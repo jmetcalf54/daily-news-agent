@@ -1,6 +1,8 @@
 import os
+import smtplib
 import feedparser
 from dotenv import load_dotenv
+from email.message import EmailMessage
 
 
 load_dotenv()
@@ -20,6 +22,16 @@ EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD")
 
 
 # Functions
+def validate_email_config():
+    if not EMAIL_SENDER:
+        raise ValueError("EMAIL_SENDER is missing from .env")
+
+    if not EMAIL_RECEIVER:
+        raise ValueError("EMAIL_RECEIVER is missing from .env")
+
+    if not EMAIL_PASSWORD:
+        raise ValueError("EMAIL_PASSWORD is missing from .env")
+
 def fetch_stories():
     stories = []
 
@@ -37,9 +49,6 @@ def fetch_stories():
 
     return stories
 
-def select_top_stories(stories, limit):
-    return stories[:limit]
-
 def format_digest(stories):
     digest = "Metcalf Mayhem Roundup\n"
     digest += "=================\n\n"
@@ -51,20 +60,25 @@ def format_digest(stories):
 
     return digest
 
-def validate_email_config():
-    if not EMAIL_SENDER:
-        raise ValueError("EMAIL_SENDER is missing from .env")
+def select_top_stories(stories, limit):
+    return stories[:limit]
 
-    if not EMAIL_RECEIVER:
-        raise ValueError("EMAIL_RECEIVER is missing from .env")
+def send_email(subject, body):
+    message = EmailMessage()
+    message["From"] = EMAIL_SENDER
+    message["To"] = EMAIL_RECEIVER
+    message["Subject"] = subject
+    message.set_content(body)
 
-    if not EMAIL_PASSWORD:
-        raise ValueError("EMAIL_PASSWORD is missing from .env")
+    with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
+        smtp.login(EMAIL_SENDER, EMAIL_PASSWORD)
+        smtp.send_message(message)
+
 
 # Main workflow function
 def main():
     validate_email_config()
-    
+
     stories = fetch_stories()
     selected_stories = select_top_stories(stories, STORY_LIMIT)
     digest = format_digest(selected_stories)
@@ -73,6 +87,8 @@ def main():
     print(f"Selected {len(selected_stories)} stories.\n")
     print(digest)
 
+    send_email("Metcalf Mayhem Roundup", digest)
+    print("Email sent.")
 
 # Script entry point
 if __name__ == "__main__":
