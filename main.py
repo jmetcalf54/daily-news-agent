@@ -27,23 +27,29 @@ def fetch_stories():
 
     return stories
 
-def select_top_stories(stories, limit=10):
+def select_top_stories(stories, limit):
     return stories[:limit]
 
+def format_digest(stories):
+    digest = "Metcalf Mayhem Roundup\n"
+    digest += "=================\n\n"
+
+    for index, story in enumerate(stories, start=1):
+        digest += f"{index}. {story['title']}\n"
+        digest += f"   Source: {story['source']}\n"
+        digest += f"   Link: {story['link']}\n\n"
+
+    return digest
 
 # Main workflow function
 def main():
     stories = fetch_stories()
     selected_stories = select_top_stories(stories, STORY_LIMIT)
+    digest = format_digest(selected_stories)
 
     print(f"Fetched {len(stories)} stories.")
     print(f"Selected {len(selected_stories)} stories.\n")
-
-    for story in selected_stories:
-        print(story["title"])
-        print(story["source"])
-        print(story["link"])
-        print()
+    print(digest)
 
 
 # Script entry point
