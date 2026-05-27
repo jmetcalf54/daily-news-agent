@@ -1,4 +1,9 @@
+import os
 import feedparser
+from dotenv import load_dotenv
+
+
+load_dotenv()
 
 # Constants
 feeds = [
@@ -8,6 +13,11 @@ feeds = [
 ]
 
 STORY_LIMIT = 10
+
+EMAIL_SENDER = os.getenv("EMAIL_SENDER")
+EMAIL_RECEIVER = os.getenv("EMAIL_RECEIVER")
+EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD")
+
 
 # Functions
 def fetch_stories():
@@ -41,8 +51,20 @@ def format_digest(stories):
 
     return digest
 
+def validate_email_config():
+    if not EMAIL_SENDER:
+        raise ValueError("EMAIL_SENDER is missing from .env")
+
+    if not EMAIL_RECEIVER:
+        raise ValueError("EMAIL_RECEIVER is missing from .env")
+
+    if not EMAIL_PASSWORD:
+        raise ValueError("EMAIL_PASSWORD is missing from .env")
+
 # Main workflow function
 def main():
+    validate_email_config()
+    
     stories = fetch_stories()
     selected_stories = select_top_stories(stories, STORY_LIMIT)
     digest = format_digest(selected_stories)
