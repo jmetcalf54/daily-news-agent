@@ -1,25 +1,16 @@
-import os
-import smtplib
 import feedparser
-from dotenv import load_dotenv
+import smtplib
 from email.message import EmailMessage
 
-
-load_dotenv()
-
-# Constants
-feeds = [
-    "https://rss.app/feeds/eDX1McvTcYaXduhZ.xml",
-    "https://rss.nytimes.com/services/xml/rss/nyt/World.xml",
-    "https://www.npr.org/rss/rss.php?id=1001",
-]
-
-STORY_LIMIT = 10
-
-EMAIL_SENDER = os.getenv("EMAIL_SENDER")
-EMAIL_RECEIVER = os.getenv("EMAIL_RECEIVER")
-EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD")
-
+from config import (
+    FEEDS,
+    STORY_LIMIT,
+    EMAIL_SUBJECT,
+    EMAIL_SENDER,
+    EMAIL_RECEIVER,
+    EMAIL_PASSWORD,
+    validate_email_config,
+)
 
 # Functions
 def validate_email_config():
@@ -35,7 +26,7 @@ def validate_email_config():
 def fetch_stories():
     stories = []
 
-    for feed_url in feeds:
+    for feed_url in FEEDS:
         feed = feedparser.parse(feed_url)
 
         for entry in feed.entries:
@@ -93,14 +84,15 @@ def main():
     validate_email_config()
 
     stories = fetch_stories()
-    selected_stories = select_top_stories(stories, STORY_LIMIT)
+    unique_stories = remove_duplicate_stories(stories)
+    selected_stories = select_top_stories(unique_stories, STORY_LIMIT)
     digest = format_digest(selected_stories)
 
     print(f"Fetched {len(stories)} stories.")
     print(f"After removing duplicates: {len(unique_stories)} stories.")
     print(f"Selected {len(selected_stories)} stories.")
 
-    send_email("Metcalf Mayhem Roundup", digest)
+    send_email(EMAIL_SUBJECT, digest)
     print("Email sent.")
 
 # Script entry point
