@@ -74,6 +74,19 @@ def send_email(subject, body):
         smtp.login(EMAIL_SENDER, EMAIL_PASSWORD)
         smtp.send_message(message)
 
+def remove_duplicate_stories(stories):
+    unique_stories = []
+    seen_links = set()
+
+    for story in stories:
+        link = story["link"]
+
+        if link not in seen_links:
+            unique_stories.append(story)
+            seen_links.add(link)
+
+    return unique_stories
+
 
 # Main workflow function
 def main():
@@ -84,8 +97,8 @@ def main():
     digest = format_digest(selected_stories)
 
     print(f"Fetched {len(stories)} stories.")
-    print(f"Selected {len(selected_stories)} stories.\n")
-    print(digest)
+    print(f"After removing duplicates: {len(unique_stories)} stories.")
+    print(f"Selected {len(selected_stories)} stories.")
 
     send_email("Metcalf Mayhem Roundup", digest)
     print("Email sent.")
