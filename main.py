@@ -14,16 +14,6 @@ from config import (
 )
 
 # Functions
-def validate_email_config():
-    if not EMAIL_SENDER:
-        raise ValueError("EMAIL_SENDER is missing from .env")
-
-    if not EMAIL_RECEIVER:
-        raise ValueError("EMAIL_RECEIVER is missing from .env")
-
-    if not EMAIL_PASSWORD:
-        raise ValueError("EMAIL_PASSWORD is missing from .env")
-    
 def parse_args():
     parser = argparse.ArgumentParser(description = "Send a daily news digest email.")
     parser.add_argument(
@@ -92,8 +82,6 @@ def remove_duplicate_stories(stories):
 
 # Main workflow function
 def main():
-    validate_email_config()
-
     args = parse_args()
 
     stories = fetch_stories()
@@ -103,11 +91,14 @@ def main():
 
     print(f"Fetched {len(stories)} stories.")
     print(f"After removing duplicates: {len(unique_stories)} stories.")
-    print(f"Selected {len(selected_stories)} stories.")
+    print(f"Selected {len(selected_stories)} stories.\n")
+
 
     if args.preview:
+        print(digest)
         print("Preview mode: email was not sent.")
     else:
+        validate_email_config()
         send_email(EMAIL_SUBJECT, digest)
         print("Email sent.")
 
