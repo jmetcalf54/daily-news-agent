@@ -11,6 +11,28 @@ FEEDS = [
     "https://www.npr.org/rss/rss.php?id=1001",
 ]
 
+PREFERRED_TOPICS = [
+    "space",
+    "nasa",
+    "technology",
+    "ai",
+    "cybersecurity",
+    "business",
+    "illinois",
+    "chicago",
+]
+
+BLOCKED_TOPICS = [
+    "celebrity",
+    "gossip",
+    "sports",
+    "world cup",
+    "russia",
+    "u.s.",
+    "trump",
+    "ukraine",
+]
+
 STORY_LIMIT = 15
 
 EMAIL_SUBJECT = "Metcalf Mayhem Roundup"

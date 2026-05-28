@@ -10,6 +10,8 @@ from config import (
     EMAIL_SENDER,
     EMAIL_RECEIVER,
     EMAIL_PASSWORD,
+    PREFERRED_TOPICS,
+    BLOCKED_TOPICS,
     validate_email_config,
 )
 
@@ -79,14 +81,40 @@ def remove_duplicate_stories(stories):
 
     return unique_stories
 
+def rank_stories(stories):
+    ranked_stories = []
+    for story in stories:
+        story["score"] = score_story(story)
+        ranked_stories.append(story)
+    ranked_stories.sort(key=lambda x: x["score"], reverse=True)
+    return ranked_stories
+
+def score_story(story):
+    score = 0
+
+    title = story["title"].lower()
+
+    for topic in PREFERRED_TOPICS:
+        if topic.lower() in title:
+            score += 1
+
+    for topic in BLOCKED_TOPICS:
+        if topic.lower() in title:
+            score -= 2
+
+    return score
+
 
 # Main workflow function
 def main():
     args = parse_args()
 
     stories = fetch_stories()
+
     unique_stories = remove_duplicate_stories(stories)
-    selected_stories = select_top_stories(unique_stories, STORY_LIMIT)
+    ranked_stories = rank_stories(unique_stories)
+    selected_stories = select_top_stories(ranked_stories, STORY_LIMIT)
+
     digest = format_digest(selected_stories)
 
     print(f"Fetched {len(stories)} stories.")
